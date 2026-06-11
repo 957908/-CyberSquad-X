@@ -9,7 +9,8 @@ from agents.risk_agent import RiskAgent
 from reports.report_agent import ReportAgent
 from reports.json_report_agent import JSONReportAgent
 
-
+from database.database import CyberSquadDB
+from datetime import datetime
 def main():
 
     print("=" * 60)
@@ -26,7 +27,7 @@ def main():
     risk_agent = RiskAgent()
     report_agent = ReportAgent()
     json_agent = JSONReportAgent()
-
+    db = CyberSquadDB()
     # Website Scan
     website_result = website_agent.execute(target)
 
@@ -65,6 +66,11 @@ def main():
         website_result,
         recon_result
     )
+    db.save_scan(
+    target,
+    score,
+    str(datetime.now())
+)
 
     print("\n")
     print("=" * 60)
