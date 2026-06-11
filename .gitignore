@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+.venv/
+
+# Reports
+reports/latest_scan.json
+reports/history/
+
+# Generated Reports
+report_*.txt
+
+# Streamlit
+.streamlit/
+
+# Environment Variables
+.env
+
+# VS Code
+.vscode/
