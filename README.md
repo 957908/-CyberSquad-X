@@ -17,3 +17,4 @@ To install Cybersquad, clone the repository and install the required dependencie
 ```bash
 git clone https://github.com/OmKadam27/cybersquad.git
 cd cybersquad
+"# -CyberSquad-X" 
