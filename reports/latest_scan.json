@@ -1,24 +1,22 @@
 {
-    "target": "https://www.cdac.in",
-    "timestamp": "2026-06-12 01:23:26.923662",
+    "target": " https://www.cdac.in",
+    "timestamp": "2026-06-12 19:54:08.266983",
     "risk_score": 60,
     "website": {
         "status_code": 200,
         "server": "Unknown",
-        "https": true,
+        "https": false,
         "missing_headers": []
     },
     "recon": {
         "/robots.txt": 200,
-        "/security.txt": 200,
+        "/security.txt": 404,
         "/admin": 200,
         "/login": 200,
         "/dashboard": 200
     },
     "vulnerabilities": [
-        {
-            "service": "Website Headers",
-            "risk": "Medium"
-        }
+        "Missing Security Headers",
+        "Open Admin Page"
     ]
 }
