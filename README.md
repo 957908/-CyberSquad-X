@@ -2,6 +2,8 @@
 
 ### *AI-Powered Cybersecurity Operations & Assessment Platform*
 
+![CyberSquad X Dashboard Console](dashboard_screenshot.png)
+
 CyberSquad X is a modern, state-of-the-art cybersecurity analysis platform that automates attack surface discovery, scans target networks, checks SSL/WHOIS info, maps vulnerabilities to **OWASP Top 10** and **MITRE ATT&CK** frameworks, and generates detailed security compliance audits using **local AI Agents** (Ollama/CrewAI).
 
 ---
