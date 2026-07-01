@@ -11,7 +11,11 @@ class JSONReportAgent:
         risk_score,
         website_result,
         recon_result,
-        vulnerabilities
+        vulnerabilities,
+        ai_analysis,
+        crew_analysis,
+        nmap_result
+        
     ):
 
         data = {
@@ -19,9 +23,12 @@ class JSONReportAgent:
             "timestamp": str(datetime.now()),
             "risk_score": risk_score,
             "website": website_result,
-            "recon": recon_result,
-            "vulnerabilities": vulnerabilities
-        }
+             "recon": recon_result,
+             "nmap": nmap_result,
+             "vulnerabilities": vulnerabilities,
+             "ai_analysis": ai_analysis,
+             "crew_analysis": crew_analysis
+}
 
         os.makedirs(
             "reports/history",
@@ -31,7 +38,8 @@ class JSONReportAgent:
         # Latest Scan
         with open(
             "reports/latest_scan.json",
-            "w"
+            "w",
+            encoding="utf-8"
         ) as file:
 
             json.dump(
@@ -52,7 +60,8 @@ class JSONReportAgent:
 
         with open(
             filename,
-            "w"
+            "w",
+            encoding="utf-8"
         ) as file:
 
             json.dump(

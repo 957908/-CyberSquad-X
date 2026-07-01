@@ -77,6 +77,18 @@ class PDFReportAgent:
                 styles["Normal"]
             )
         )
+        content.append(
+            Paragraph(
+                "AI Analysis",
+                styles["Heading2"]
+            )
+        )
+        content.append(
+            Paragraph(
+                str(analysis),
+                styles["Normal"]
+            )
+        )
 
         doc.build(content)
 

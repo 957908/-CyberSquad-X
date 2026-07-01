@@ -21,3 +21,19 @@ report_*.txt
 
 # VS Code
 .vscode/
+
+# Binaries & Large Setup Files
+OllamaSetup.exe
+
+# Database
+*.db
+cybersquad.db
+
+# Log files
+error.txt
+report_*.txt
+*.log
+
+# Generated Reports & PDFs
+*.pdf
+reports/*.pdf
