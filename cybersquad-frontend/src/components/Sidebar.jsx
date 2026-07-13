@@ -1,10 +1,9 @@
 import { useState } from "react";
 
-function Sidebar() {
-  const [activeTab, setActiveTab] = useState("Dashboard");
-
+function Sidebar({ activeTab = "Dashboard", setActiveTab = () => {} }) {
   const menuItems = [
     { name: "Dashboard", icon: "📊" },
+    { name: "System Audit", icon: "💻" },
     { name: "History", icon: "📜" },
     { name: "Reports", icon: "📄" },
     { name: "CVE Center", icon: "🚨" },

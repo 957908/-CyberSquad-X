@@ -36,6 +36,10 @@ from api.auth.users import users
 from api.auth.password import verify_password
 from api.auth.jwt_handler import create_token
 
+from scanners.windows_scanner import WindowsScanner
+from scanners.adb_scanner import ADBScanner
+from agents.system_analyst_agent import SystemAnalystAgent
+
 # ==================================================
 # FastAPI Application
 # ==================================================
@@ -167,6 +171,59 @@ async def latest_report():
     ) as file:
 
         return json.load(file)
+
+
+# ==================================================
+# System & Device Scanners API
+# ==================================================
+
+@app.post("/scan-system")
+async def scan_local_system():
+    try:
+        scanner = WindowsScanner()
+        analyst = SystemAnalystAgent()
+        
+        report = scanner.scan()
+        analysis = analyst.analyze(report, "windows")
+        
+        return {
+            "success": True,
+            "device_type": "windows",
+            "report": report,
+            "analysis": analysis
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@app.post("/scan-android")
+async def scan_connected_android():
+    try:
+        scanner = ADBScanner()
+        analyst = SystemAnalystAgent()
+        
+        report = scanner.scan()
+        if report.get("status") == "error":
+            return {
+                "success": False,
+                "error": report.get("message")
+            }
+            
+        analysis = analyst.analyze(report, "android")
+        
+        return {
+            "success": True,
+            "device_type": "android",
+            "report": report,
+            "analysis": analysis
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 
 # ==================================================
