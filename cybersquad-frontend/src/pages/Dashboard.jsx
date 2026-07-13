@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "../services/api";
 import LiveThreatCard from "../components/LiveThreatCard";
 
 import RiskCard from "../components/RiskCard";
@@ -22,7 +23,7 @@ function Dashboard() {
   const loadHistory = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/history"
+        `${API_BASE_URL}/history`
       );
 
       const data = await response.json();
@@ -44,7 +45,7 @@ function Dashboard() {
       setProgress(10);
 
       const response = await fetch(
-        "http://127.0.0.1:8000/scan",
+        `${API_BASE_URL}/scan`,
         {
           method: "POST",
           headers: {
@@ -760,7 +761,7 @@ function Dashboard() {
               </div>
                     <a
           href={
-            "http://127.0.0.1:8000/"
+            `${API_BASE_URL}/`
             + result.pdf_report
           }
           target="_blank"
