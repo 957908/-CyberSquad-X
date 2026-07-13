@@ -3,6 +3,42 @@
    ================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
+:root {
+  --bg-darker: #030712;
+  --bg-dark: #0b0f19;
+  --bg-panel: rgba(17, 25, 40, 0.55);
+  --border-color: rgba(6, 182, 212, 0.2);
+  --border-light: rgba(6, 182, 212, 0.1);
+  --text-white: #ffffff;
+  --text-gray: #9ca3af;
+  --text-main: #e5e7eb;
+  --input-bg: rgba(17, 24, 39, 0.6);
+  --glow-color: rgba(6, 182, 212, 0.3);
+  --sidebar-gradient: linear-gradient(180deg, #090d16 0%, #030712 100%);
+  --nav-bg: rgba(9, 13, 22, 0.7);
+  --accent-cyan: #06b6d4;
+  --accent-glow: rgba(6, 182, 212, 0.15);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+}
+
+body.light-theme {
+  --bg-darker: #f3f4f6;
+  --bg-dark: #e5e7eb;
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --border-color: rgba(6, 182, 212, 0.4);
+  --border-light: rgba(6, 182, 212, 0.25);
+  --text-white: #111827;
+  --text-gray: #4b5563;
+  --text-main: #1f2937;
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --glow-color: rgba(6, 182, 212, 0.15);
+  --sidebar-gradient: linear-gradient(180deg, #e5e7eb 0%, #f3f4f6 100%);
+  --nav-bg: rgba(243, 244, 246, 0.85);
+  --accent-cyan: #0891b2;
+  --accent-glow: rgba(8, 145, 178, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.08);
+}
+
 /* ==================================================
    CyberSquad X Modern CSS Reset & Typography
    ================================================== */
@@ -17,10 +53,11 @@ body,
 #root {
   min-height: 100vh;
   width: 100%;
-  background: #030712;
-  color: #e5e7eb;
+  background: var(--bg-darker);
+  color: var(--text-main);
   font-family: 'Outfit', 'Inter', sans-serif;
   scroll-behavior: smooth;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ==================================================
@@ -32,18 +69,18 @@ body,
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b0f19;
+  background: var(--bg-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(6, 182, 212, 0.3);
+  background: var(--glow-color);
   border-radius: 4px;
-  border: 1px solid rgba(6, 182, 212, 0.1);
+  border: 1px solid var(--border-light);
   transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.6);
+  background: var(--accent-cyan);
 }
 
 /* ==================================================
@@ -54,10 +91,10 @@ input {
   max-width: 450px;
   padding: 12px 18px;
   border-radius: 10px;
-  border: 1px solid rgba(6, 182, 212, 0.2);
-  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
   backdrop-filter: blur(5px);
-  color: #ffffff;
+  color: var(--text-white);
   outline: none;
   font-family: 'Inter', sans-serif;
   font-size: 15px;

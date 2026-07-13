@@ -26,6 +26,25 @@ function Dashboard() {
   const [sysError, setSysError] = useState("");
   const [selectedDevice, setSelectedDevice] = useState("windows"); // "windows" or "android"
 
+  const [selectedFeatures, setSelectedFeatures] = useState({
+    nmap: true,
+    subdomain: true,
+    whois: true,
+    ssl: true,
+    geoip: true,
+    cve: true,
+    owasp: true,
+    mitre: true,
+    compliance: true
+  });
+
+  const toggleFeature = (feature) => {
+    setSelectedFeatures(prev => ({
+      ...prev,
+      [feature]: !prev[feature]
+    }));
+  };
+
   const runSystemScan = async () => {
     setSysLoading(true);
     setSysError("");
@@ -83,6 +102,7 @@ function Dashboard() {
           },
           body: JSON.stringify({
             target,
+            features: Object.keys(selectedFeatures).filter(k => selectedFeatures[k])
           }),
         }
       );
@@ -113,8 +133,8 @@ function Dashboard() {
       style={{
         display: "flex",
         minHeight: "100vh",
-        backgroundColor: "#0b0f19",
-        color: "white",
+        backgroundColor: "var(--bg-dark)",
+        color: "var(--text-white)",
         fontFamily: "'Outfit', 'Inter', sans-serif",
       }}
     >
@@ -148,39 +168,147 @@ function Dashboard() {
           <div
             style={{
               display: "flex",
-              gap: "12px",
+              flexDirection: "column",
+              gap: "20px",
               marginBottom: "30px",
-              background: "rgba(17, 24, 39, 0.4)",
-              padding: "20px",
+              background: "var(--bg-panel)",
+              padding: "25px",
               borderRadius: "12px",
-              border: "1px solid rgba(6, 182, 212, 0.1)",
-              alignItems: "center",
+              border: "1px solid var(--border-light)",
             }}
           >
-        <input
-          value={target}
-          onChange={(e) =>
-            setTarget(e.target.value)
-          }
-          placeholder="https://www.target-domain.com"
-          style={{
-            padding: "14px 20px",
-            width: "100%",
-            maxWidth: "500px",
-            fontSize: "16px",
-          }}
-        />
+            <div style={{ display: "flex", gap: "12px", width: "100%" }}>
+              <input
+                value={target}
+                onChange={(e) => setTarget(e.target.value)}
+                placeholder="https://www.target-domain.com"
+                style={{
+                  padding: "14px 20px",
+                  width: "100%",
+                  maxWidth: "500px",
+                  fontSize: "16px",
+                }}
+              />
+              <button
+                onClick={startScan}
+                style={{
+                  padding: "14px 28px",
+                  fontSize: "16px",
+                }}
+              >
+                ⚡ Initiate Audit
+              </button>
+            </div>
 
-        <button
-          onClick={startScan}
-          style={{
-            padding: "14px 28px",
-            fontSize: "16px",
-          }}
-        >
-          ⚡ Initiate Audit
-        </button>
-      </div>
+            {/* Checkboxes selector */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <span style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-gray)" }}>
+                ⚙️ Select Scan Modules to Run:
+              </span>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))",
+                  gap: "12px",
+                  padding: "15px",
+                  background: "rgba(0, 0, 0, 0.15)",
+                  borderRadius: "10px",
+                  border: "1px solid var(--border-light)",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-nmap"
+                    checked={selectedFeatures.nmap}
+                    onChange={() => toggleFeature("nmap")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-nmap" style={{ cursor: "pointer" }}>🔌 Port Scan (Nmap)</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-subdomain"
+                    checked={selectedFeatures.subdomain}
+                    onChange={() => toggleFeature("subdomain")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-subdomain" style={{ cursor: "pointer" }}>🌐 Subdomain Audit</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-whois"
+                    checked={selectedFeatures.whois}
+                    onChange={() => toggleFeature("whois")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-whois" style={{ cursor: "pointer" }}>📜 WHOIS Database</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-ssl"
+                    checked={selectedFeatures.ssl}
+                    onChange={() => toggleFeature("ssl")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-ssl" style={{ cursor: "pointer" }}>🔑 SSL Certificate</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-geoip"
+                    checked={selectedFeatures.geoip}
+                    onChange={() => toggleFeature("geoip")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-geoip" style={{ cursor: "pointer" }}>🗺️ GeoIP Locator</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-cve"
+                    checked={selectedFeatures.cve}
+                    onChange={() => toggleFeature("cve")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-cve" style={{ cursor: "pointer" }}>🚨 CVE Vulnerability Check</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-owasp"
+                    checked={selectedFeatures.owasp}
+                    onChange={() => toggleFeature("owasp")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-owasp" style={{ cursor: "pointer" }}>🛡️ OWASP Top 10 Mapping</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-mitre"
+                    checked={selectedFeatures.mitre}
+                    onChange={() => toggleFeature("mitre")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-mitre" style={{ cursor: "pointer" }}>💥 MITRE ATT&CK Mapping</label>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "13px" }}>
+                  <input
+                    type="checkbox"
+                    id="feat-compliance"
+                    checked={selectedFeatures.compliance}
+                    onChange={() => toggleFeature("compliance")}
+                    style={{ width: "15px", height: "15px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="feat-compliance" style={{ cursor: "pointer" }}>⚖️ Compliance Audit</label>
+                </div>
+              </div>
+            </div>
+          </div>
         {loading && (
         <>
             <h3>🔍 Scanning Target...</h3>

@@ -67,35 +67,17 @@ os.makedirs("reports", exist_ok=True)
 app.mount("/reports", StaticFiles(directory="reports"), name="reports")
 
 @app.post("/login")
-async def login(
-    user: UserLogin
-):
-
-    db_user = users.get(
-        user.username
-    )
-
+async def login(user: UserLogin):
+    db_user = db.get_user(user.username)
     if not db_user:
+        return {"success": False, "message": "User not found."}
 
-        return {
-            "success": False
-        }
-
-    if not verify_password(
-        user.password,
-        db_user["password"]
-    ):
-
-        return {
-            "success": False
-        }
+    if not verify_password(user.password, db_user["password"]):
+        return {"success": False, "message": "Incorrect password."}
 
     token = create_token({
-        "username":
-            user.username,
-
-        "role":
-            db_user["role"]
+        "username": user.username,
+        "role": db_user["role"]
     })
 
     return {
@@ -104,6 +86,72 @@ async def login(
         "role": db_user["role"]
     }
 
+
+@app.post("/register")
+async def register(user: UserRegister):
+    db_user = db.get_user(user.username)
+    if db_user:
+        return {"success": False, "message": "Username already exists."}
+    
+    from api.auth.password import hash_password
+    pw_hash = hash_password(user.password)
+    success = db.create_user(
+        user.username,
+        pw_hash,
+        user.first_name,
+        user.last_name,
+        user.work_organization,
+        user.mobile_number
+    )
+    if success:
+        return {"success": True, "message": "Registration successful."}
+    else:
+        return {"success": False, "message": "Failed to create user."}
+
+
+# Temporary mock OTP store
+mock_otps = {}
+
+
+@app.post("/forgot-password/request")
+async def forgot_password_request(req: ForgotPasswordRequest):
+    db_user = db.get_user(req.username)
+    if not db_user:
+        return {"success": False, "message": "User not found."}
+    
+    import random
+    otp = str(random.randint(100000, 999999))
+    mock_otps[req.username] = otp
+    
+    # Simulate sending OTP
+    print("=" * 60)
+    print(f"MOCK SMS/EMAIL GATEWAY -> SENT TO {db_user['mobile_number'] if req.method == 'mobile' else req.username}")
+    print(f"OTP CODE: {otp}")
+    print("=" * 60)
+    
+    return {
+        "success": True,
+        "message": f"OTP successfully sent via {req.method}.",
+        "otp_mock": otp
+    }
+
+
+@app.post("/forgot-password/verify")
+async def forgot_password_verify(req: ForgotPasswordVerify):
+    stored_otp = mock_otps.get(req.username)
+    if not stored_otp or stored_otp != req.otp:
+        return {"success": False, "message": "Invalid or expired OTP."}
+    
+    from api.auth.password import hash_password
+    pw_hash = hash_password(req.new_password)
+    success = db.update_password(req.username, pw_hash)
+    
+    if success:
+        mock_otps.pop(req.username, None)
+        return {"success": True, "message": "Password updated successfully."}
+    else:
+        return {"success": False, "message": "Failed to update password."}
+
 # ==================================================
 # Database
 # ==================================================
@@ -111,12 +159,33 @@ async def login(
 db = CyberSquadDB()
 
 # ==================================================
-# Request Model
+# Request Models
 # ==================================================
 
 
 class ScanRequest(BaseModel):
     target: str
+    features: list[str] = None
+
+
+class UserRegister(BaseModel):
+    first_name: str
+    last_name: str
+    work_organization: str
+    mobile_number: str
+    username: str
+    password: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    username: str
+    method: str
+
+
+class ForgotPasswordVerify(BaseModel):
+    username: str
+    otp: str
+    new_password: str
 
 
 # ==================================================
@@ -279,15 +348,10 @@ async def scan_target(request: ScanRequest):
         print("Security Grade Calculation Done")
         
 
-        # ----------------------------
-        # Recon Scan
-        # ----------------------------
-
-        recon_result = recon_agent.scan(
-            request.target
-        )
-
-        print("Recon Scan Done")
+        # Parse requested features (fallback to all if empty)
+        features = request.features
+        if not features:
+            features = ["nmap", "subdomain", "whois", "ssl", "geoip", "cve", "owasp", "mitre", "compliance"]
 
         # ----------------------------
         # Clean Target
@@ -303,21 +367,36 @@ async def scan_target(request: ScanRequest):
         print("CLEAN TARGET =", clean_target)
 
         # ----------------------------
-        # Nmap Scan
+        # Nmap & Port Intelligence
         # ----------------------------
 
-        nmap_result = nmap_agent.scan(
-            clean_target
-        )
+        if "nmap" in features:
+            nmap_result = nmap_agent.scan(clean_target)
+            print("Nmap Scan Done")
+            port_intelligence = port_agent.analyze(nmap_result)
+        else:
+            nmap_result = "Nmap Scan Disabled"
+            port_intelligence = []
 
-        print("Nmap Scan Done")
-        port_intelligence = port_agent.analyze(
-            nmap_result
-        )
+        # ----------------------------
+        # Subdomains
+        # ----------------------------
 
-        subdomain_result = subdomain_agent.scan(
-            clean_target.replace("www.", "")
-        )
+        if "subdomain" in features:
+            subdomain_result = subdomain_agent.scan(clean_target.replace("www.", ""))
+            print("Subdomain Scan Done")
+        else:
+            subdomain_result = []
+
+        # ----------------------------
+        # Recon Scan
+        # ----------------------------
+
+        if "owasp" in features or "mitre" in features or "compliance" in features:
+            recon_result = recon_agent.scan(request.target)
+            print("Recon Scan Done")
+        else:
+            recon_result = {}
 
         # ----------------------------
         # Risk Score
@@ -363,79 +442,99 @@ async def scan_target(request: ScanRequest):
         # WHOIS
         # ----------------------------
 
-        whois_result = whois_agent.lookup(
-            clean_target
-        )
+        if "whois" in features:
+            whois_result = whois_agent.lookup(clean_target)
+            print("WHOIS Done")
+        else:
+            whois_result = {"status": "skipped", "message": "WHOIS Lookup Disabled"}
 
         # ----------------------------
         # SSL
         # ----------------------------
 
-        ssl_result = ssl_agent.scan(
-            clean_target
-        )
+        if "ssl" in features:
+            ssl_result = ssl_agent.scan(clean_target)
+            print("SSL Done")
+        else:
+            ssl_result = {"ssl_enabled": False, "message": "SSL Audit Disabled"}
 
         # ----------------------------
         # GEO IP
         # ----------------------------
 
-        geoip_result = geoip_agent.lookup(
-            clean_target
-        )
+        if "geoip" in features:
+            geoip_result = geoip_agent.lookup(clean_target)
+            print("GeoIP Done")
+        else:
+            geoip_result = {"status": "skipped", "message": "GeoIP Lookup Disabled"}
 
         # ----------------------------
         # CVE Detection
         # ----------------------------
 
-        cve_result = cve_agent.check(
-            nmap_result
-        )
+        if "cve" in features and "nmap" in features:
+            cve_result = cve_agent.check(nmap_result)
+            print("CVE Check Done")
+        else:
+            cve_result = []
 
         # ----------------------------
         # OWASP Mapping
         # ----------------------------
 
-        owasp_result = (
-            owasp_agent
-            .map_vulnerabilities(
-                vulnerabilities
-            )
+        if "owasp" in features:
+            owasp_result = owasp_agent.map_vulnerabilities(vulnerabilities)
+            print("OWASP Mapping Done")
+        else:
+            owasp_result = []
+
+        # ----------------------------
+        # Attack Surface & Technologies
+        # ----------------------------
+
+        attack_surface = attack_surface_agent.analyze(
+            subdomain_result,
+            nmap_result if "nmap" in features else "",
+            vulnerabilities
         )
-        attack_surface = (
-            attack_surface_agent.analyze(
-                subdomain_result,
-                nmap_result,
-                vulnerabilities
-            )
+
+        technology_result = technology_agent.detect(request.target)
+
+        # ----------------------------
+        # AI Agents Analysis
+        # ----------------------------
+
+        security_analysis = security_agent.analyze(
+            risk_score,
+            vulnerabilities,
+            cve_result
         )
-        technology_result = (
-            technology_agent.detect(
-                request.target
-            )
+
+        threat_result = threat_agent.hunt(
+            vulnerabilities,
+            cve_result,
+            port_intelligence
         )
-        security_analysis = (
-            security_agent.analyze(
-                risk_score,
-                vulnerabilities,
-                cve_result
-            )
-        )
-        threat_result = (
-            threat_agent.hunt(
-                vulnerabilities,
-                cve_result,
-                port_intelligence
-            )
-        )
+
         incident_result = incident_agent.respond(
             threat_result,
             vulnerabilities
         )
-        compliance_result = compliance_agent.audit(
-            vulnerabilities,
-            security_grade,
-            ssl_result
-        )
+
+        # ----------------------------
+        # Compliance
+        # ----------------------------
+
+        if "compliance" in features:
+            compliance_result = compliance_agent.audit(
+                vulnerabilities,
+                security_grade,
+                ssl_result
+            )
+            print("Compliance Audit Done")
+        else:
+            compliance_result = []
+
         executive_report = report_writer.generate(
             request.target,
             risk_score,
@@ -444,7 +543,7 @@ async def scan_target(request: ScanRequest):
             compliance_result
         )
 
-        mitre_result = mitre_agent.map(vulnerabilities)
+        mitre_result = mitre_agent.map(vulnerabilities) if "mitre" in features else []
 
 
         # ----------------------------

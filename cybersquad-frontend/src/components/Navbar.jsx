@@ -1,19 +1,35 @@
+import { useState, useEffect } from "react";
+
 function Navbar() {
   const userRole = localStorage.getItem("role") || "analyst";
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+
+  useEffect(() => {
+    if (theme === "light") {
+      document.body.classList.add("light-theme");
+    } else {
+      document.body.classList.remove("light-theme");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   return (
     <div
       style={{
-        background: "rgba(17, 24, 39, 0.4)",
+        background: "var(--bg-panel)",
         backdropFilter: "blur(8px)",
         padding: "16px 24px",
         borderRadius: "12px",
         marginBottom: "30px",
-        border: "1px solid rgba(6, 182, 212, 0.15)",
+        border: "1px solid var(--border-color)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+        boxShadow: "0 4px 20px var(--shadow-color)",
         fontFamily: "'Outfit', sans-serif",
       }}
     >
@@ -22,7 +38,7 @@ function Navbar() {
           margin: 0,
           fontSize: "18px",
           fontWeight: "600",
-          color: "#06b6d4",
+          color: "var(--accent-cyan)",
           display: "flex",
           alignItems: "center",
           gap: "8px",
@@ -49,9 +65,9 @@ function Navbar() {
           fontSize: "14px",
         }}
       >
-        <span style={{ color: "#9ca3af" }}>
+        <span style={{ color: "var(--text-gray)" }}>
           Role:{" "}
-          <strong style={{ color: "#06b6d4", textTransform: "uppercase" }}>
+          <strong style={{ color: "var(--accent-cyan)", textTransform: "uppercase" }}>
             {userRole}
           </strong>
         </span>
@@ -67,6 +83,24 @@ function Navbar() {
         >
           Secure Node
         </span>
+        <button
+          onClick={toggleTheme}
+          style={{
+            background: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "6px",
+            padding: "5px 10px",
+            color: "var(--text-white)",
+            cursor: "pointer",
+            fontSize: "14px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.2s ease"
+          }}
+        >
+          {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
+        </button>
       </div>
     </div>
   );
