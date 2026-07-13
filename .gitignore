@@ -37,3 +37,7 @@ report_*.txt
 # Generated Reports & PDFs
 *.pdf
 reports/*.pdf
+
+# Local Platform Tools (Android ADB binaries)
+platform-tools-latest-windows/
+platform-tools/

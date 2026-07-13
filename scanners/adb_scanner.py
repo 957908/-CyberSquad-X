@@ -1,22 +1,37 @@
 import subprocess
+import os
 
 class ADBScanner:
 
     def scan(self):
+        # Determine adb executable path (check system PATH first, fallback to local project folder paths)
+        adb_cmd = "adb"
+        local_paths = [
+            os.path.join(os.getcwd(), "platform-tools", "adb.exe"),
+            os.path.join(os.getcwd(), "platform-tools", "adb"),
+            os.path.join(os.getcwd(), "platform-tools-latest-windows", "platform-tools", "adb.exe"),
+            os.path.join(os.getcwd(), "platform-tools-latest-windows", "platform-tools", "adb"),
+        ]
+        
+        for path in local_paths:
+            if os.path.exists(path):
+                adb_cmd = path
+                break
+
         # 1. Check if adb is installed and available
         try:
-            res = subprocess.run(["adb", "version"], capture_output=True, text=True, timeout=3)
+            res = subprocess.run([adb_cmd, "version"], capture_output=True, text=True, timeout=3)
             if res.returncode != 0:
                 raise FileNotFoundError()
         except (FileNotFoundError, Exception):
             return {
                 "status": "error",
-                "message": "Android Debug Bridge (ADB) not found on host. To scan your connected Android device, please download ADB platform-tools, add it to your system PATH, and enable USB Debugging on your phone."
+                "message": "Android Debug Bridge (ADB) not found. To scan your connected Android device, please download ADB platform-tools, extract it into a folder named 'platform-tools' inside your project directory, and enable USB Debugging on your phone."
             }
 
         # 2. Check for connected devices
         try:
-            res = subprocess.run(["adb", "devices"], capture_output=True, text=True, timeout=5)
+            res = subprocess.run([adb_cmd, "devices"], capture_output=True, text=True, timeout=5)
             lines = res.stdout.strip().split("\n")
             devices = []
             for line in lines[1:]:
@@ -40,14 +55,14 @@ class ADBScanner:
         
         def get_prop(prop_name):
             try:
-                res = subprocess.run(["adb", "-s", device_id, "shell", "getprop", prop_name], capture_output=True, text=True, timeout=3)
+                res = subprocess.run([adb_cmd, "-s", device_id, "shell", "getprop", prop_name], capture_output=True, text=True, timeout=3)
                 return res.stdout.strip()
             except:
                 return "Unknown"
 
         def get_setting(namespace, key):
             try:
-                res = subprocess.run(["adb", "-s", device_id, "shell", "settings", "get", namespace, key], capture_output=True, text=True, timeout=3)
+                res = subprocess.run([adb_cmd, "-s", device_id, "shell", "settings", "get", namespace, key], capture_output=True, text=True, timeout=3)
                 val = res.stdout.strip()
                 if "invalid" in val.lower() or "null" in val.lower():
                     return "0"
@@ -77,7 +92,7 @@ class ADBScanner:
 
         # Third Party Apps
         try:
-            res = subprocess.run(["adb", "-s", device_id, "shell", "pm", "list", "packages", "-3"], capture_output=True, text=True, timeout=5)
+            res = subprocess.run([adb_cmd, "-s", device_id, "shell", "pm", "list", "packages", "-3"], capture_output=True, text=True, timeout=5)
             packages = []
             for line in res.stdout.strip().split("\n"):
                 if line.strip() and line.startswith("package:"):
