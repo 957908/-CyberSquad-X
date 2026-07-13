@@ -66,6 +66,42 @@ app.add_middleware(
 os.makedirs("reports", exist_ok=True)
 app.mount("/reports", StaticFiles(directory="reports"), name="reports")
 
+
+# ==================================================
+# Database
+# ==================================================
+
+db = CyberSquadDB()
+
+# ==================================================
+# Request Models
+# ==================================================
+
+
+class ScanRequest(BaseModel):
+    target: str
+    features: list[str] = None
+
+
+class UserRegister(BaseModel):
+    first_name: str
+    last_name: str
+    work_organization: str
+    mobile_number: str
+    username: str
+    password: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    username: str
+    method: str
+
+
+class ForgotPasswordVerify(BaseModel):
+    username: str
+    otp: str
+    new_password: str
+
 @app.post("/login")
 async def login(user: UserLogin):
     db_user = db.get_user(user.username)
@@ -152,40 +188,7 @@ async def forgot_password_verify(req: ForgotPasswordVerify):
     else:
         return {"success": False, "message": "Failed to update password."}
 
-# ==================================================
-# Database
-# ==================================================
 
-db = CyberSquadDB()
-
-# ==================================================
-# Request Models
-# ==================================================
-
-
-class ScanRequest(BaseModel):
-    target: str
-    features: list[str] = None
-
-
-class UserRegister(BaseModel):
-    first_name: str
-    last_name: str
-    work_organization: str
-    mobile_number: str
-    username: str
-    password: str
-
-
-class ForgotPasswordRequest(BaseModel):
-    username: str
-    method: str
-
-
-class ForgotPasswordVerify(BaseModel):
-    username: str
-    otp: str
-    new_password: str
 
 
 # ==================================================
